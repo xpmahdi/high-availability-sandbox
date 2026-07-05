@@ -8,7 +8,6 @@ networks:
         - subnet: 172.20.0.0/16
 
 services:
-  # --- تمرین ۱: کلاستر وب‌سرورها ---
   nginx-a:
     image: nginx:latest
     container_name: nginx-master-a
@@ -28,7 +27,7 @@ services:
       - NET_ADMIN
     volumes:
       - ./ex1/configs/keepalived-A.conf:/etc/keepalived/keepalived.conf:ro
-# --- تمرین ۴: کلاستر DNS Server (Bind9) ---
+
   dns-master:
     image: ubuntu/bind9:latest
     container_name: dns-master
@@ -71,7 +70,7 @@ services:
     volumes:
       - ./ex1/configs/keepalived-B.conf:/etc/keepalived/keepalived.conf:ro
 
-  # --- تمرین ۲ و ۳: کلاستر لودبالانسرهای ادغام شده با Keepalived ---
+
   haproxy-a:
     build:
       context: .
