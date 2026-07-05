@@ -1,0 +1,18 @@
+$TTL    604800
+@       IN      SOA     ns1.mysite.local. admin.mysite.local. (
+                     2026070601         ; Serial (YYYYMMDDNN)
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      ns1.mysite.local.
+@       IN      NS      ns2.mysite.local.
+
+; آی‌پی‌های خود سرورهای دی‌ان‌اس
+ns1     IN      A       172.20.0.200
+ns2     IN      A       172.20.0.201
+
+; رکوردهای اشاره‌کننده به VIP لودبالانسر ما در تمرین ۳!
+@       IN      A       172.20.0.100
+www     IN      A       172.20.0.100

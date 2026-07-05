@@ -1,0 +1,109 @@
+version: '3.8'
+
+networks:
+  cluster_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+services:
+  # --- تمرین ۱: کلاستر وب‌سرورها ---
+  nginx-a:
+    image: nginx:latest
+    container_name: nginx-master-a
+    volumes:
+      - ./ex1/configs/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      cluster_net:
+        ipv4_address: 172.20.0.10
+
+  keepalived-nginx-a:
+    build:
+      context: ./ex1
+      dockerfile: Dockerfile.keepalived
+    container_name: keepalived-nginx-a
+    network_mode: "service:nginx-a"
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./ex1/configs/keepalived-A.conf:/etc/keepalived/keepalived.conf:ro
+# --- تمرین ۴: کلاستر DNS Server (Bind9) ---
+  dns-master:
+    image: ubuntu/bind9:latest
+    container_name: dns-master
+    environment:
+      - BIND9_USER=root
+    volumes:
+      - ./ex4/configs/master/named.conf:/etc/bind/named.conf:ro
+      - ./ex4/configs/master/mysite.local.zone:/etc/bind/mysite.local.zone:ro
+    networks:
+      cluster_net:
+        ipv4_address: 172.20.0.200
+
+  dns-slave:
+    image: ubuntu/bind9:latest
+    container_name: dns-slave
+    environment:
+      - BIND9_USER=root
+    volumes:
+      - ./ex4/configs/slave/named.conf:/etc/bind/named.conf:ro
+    networks:
+      cluster_net:
+        ipv4_address: 172.20.0.201
+  nginx-b:
+    image: nginx:latest
+    container_name: nginx-master-b
+    volumes:
+      - ./ex1/configs/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      cluster_net:
+        ipv4_address: 172.20.0.11
+
+  keepalived-nginx-b:
+    build:
+      context: ./ex1
+      dockerfile: Dockerfile.keepalived
+    container_name: keepalived-nginx-b
+    network_mode: "service:nginx-b"
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./ex1/configs/keepalived-B.conf:/etc/keepalived/keepalived.conf:ro
+
+  # --- تمرین ۲ و ۳: کلاستر لودبالانسرهای ادغام شده با Keepalived ---
+  haproxy-a:
+    build:
+      context: .
+      dockerfile: ./ex3/Dockerfile.haproxy_ha
+    container_name: haproxy-active-a
+    ports:
+      - "80:80"
+      - "443:443"
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./ex2/configs/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./ex2/certs:/usr/local/etc/haproxy/certs:ro
+      - ./ex3/configs/keepalived-HA-A.conf:/etc/keepalived/keepalived.conf:ro
+    networks:
+      cluster_net:
+        ipv4_address: 172.20.0.51
+
+  haproxy-b:
+    build:
+      context: .
+      dockerfile: ./ex3/Dockerfile.haproxy_ha
+    container_name: haproxy-backup-b
+    ports:
+      - "8080:80"
+      - "8443:443"
+    cap_add:
+      - NET_ADMIN
+    volumes:
+      - ./ex2/configs/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./ex2/certs:/usr/local/etc/haproxy/certs:ro
+      - ./ex3/configs/keepalived-HA-B.conf:/etc/keepalived/keepalived.conf:ro
+    networks:
+      cluster_net:
+        ipv4_address: 172.20.0.52

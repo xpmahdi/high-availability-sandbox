@@ -1,0 +1,5 @@
+FROM ubuntu:22.04
+RUN apt-get update -o Acquire::Max-Age=0 -o Acquire::Check-Valid-Until=false && \
+    apt-get install -y keepalived iproute2 iputils-ping procps kmod && \
+    rm -rf /var/lib/apt/lists/*
+CMD ["keepalived", "-n", "-l", "-D"]
