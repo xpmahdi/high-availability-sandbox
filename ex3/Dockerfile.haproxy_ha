@@ -1,9 +1,7 @@
 FROM alpine:3.18
 
-# نصب هم‌زمان HAProxy و Keepalived و ابزارهای شبکه
 RUN apk add --no-cache haproxy keepalived iproute2
 
-# ساخت اسکریپت استارت آپ
 RUN echo -e '#!/bin/sh\nkeepalived -n -l -D &\nhaproxy -f /usr/local/etc/haproxy/haproxy.cfg -db' > /start.sh && \
     chmod +x /start.sh
 
